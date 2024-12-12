@@ -3,6 +3,8 @@ from dash import dcc, html
 import pandas as pd
 from sqlalchemy import create_engine
 import urllib
+import dash_bootstrap_components as dbc
+from datetime import date
 
 ### ETABLISSEMENT DES CONNEXIONS ================================================================
 #MSSQLServer.energymgt.ch\MSSQL_EMGT_I02
@@ -35,46 +37,67 @@ liste_db = df_db['name'].to_list()
 
 nav = create_navbar()
 
+header = html.H4("Visualisation des données")
+
 ### RENVOI DE LA PAGE TOTALE
 def create_page_2():
     layout = html.Div([
+        # Barre de navigation
+        dbc.Row(nav),
+        dbc.Row(html.Div(header, style={'marginTop': 10, 'marginLeft': 15, 'marginBottom': 10,'justify-content':'center'})),
+        dbc.Row([
+            dbc.Col(
+                [
+                    # Dropdowns for columns (populated dynamically)
+                    html.Label("1 - Choisissez le Projet",
+                               style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
+                    dcc.Dropdown(id='db-dropdown', options=liste_db, placeholder="Choose a project",
+                                 style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
 
-        nav,
+                    # Dropdowns for columns (populated dynamically)
+                    html.Label("2 - Choisissez la Table ou est stocké le tag",
+                               style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
+                    dcc.Dropdown(id='table-dropdown', placeholder="Choose a table",
+                                 style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10})]),
+            dbc.Col(
+                [
+                    # Dropdowns for columns (populated dynamically)
+                    html.Label("3 - Choisissez le Tag à visualiser: ",
+                               style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
+                    dcc.Dropdown(id='tag-dropdown', placeholder="Choose a Tag",
+                                 style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
 
-        html.Div(html.H4("Visualisation des données"),style={'marginTop': 15,'marginLeft':15}),
+                    html.Label("4 - Choisissez le 2è Tag à visualiser: ",
+                               style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
+                    dcc.Dropdown(id='tag-dropdown-2', placeholder="Choose a 2nd Tag",
+                                 style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10})
 
-        # Dropdown to select table
-        html.Label("Choix du Projet:",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-        dcc.Dropdown(
-            id='db-dropdown',
-            options=[{'label': db_name, 'value': db_name} for db_name in liste_db],
-            placeholder="Choose a database",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}
+                ]),
+
+            dbc.Col(
+                [
+                    html.Label("5 - Définir les dates à visualiser: ",
+                               style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}),
+                    html.Div([
+                        dcc.DatePickerRange(
+                            id='date-picker-range',
+                            min_date_allowed=date(2015, 1, 1),
+                            max_date_allowed=date(2030, 1, 1),
+                            initial_visible_month=date(2023, 1, 1),
+                            end_date=date(2025, 1, 1),
+                            style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}
+                        ),
+                        html.Div(id='output-date-picker-range')])
+                ]
+            )
+        ]
         ),
+        dbc.Row(
+            # Graph to display trend
+            dcc.Graph(id='trend-graph')
+        )
 
-        # Dropdowns for columns (populated dynamically)
-        html.Label("Choix de la Table de Données:",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-        dcc.Dropdown(id='table-dropdown', placeholder="Choose a table",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-
-        html.Label("Choix du Tag:",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-        dcc.Dropdown(id='tag-dropdown', placeholder="Choose a tag",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-
-        html.Label("Choix d'un 2è Tag:",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-        dcc.Dropdown(id='tag-dropdown-2', placeholder="Choose a 2nd tag",
-                   style={'width': "60%",'marginTop': 15,'marginLeft':15,'marginBotttom':15}),
-
-        # Graph to display trend
-        dcc.Graph(id='trend-graph')
-
-    ],style={'marginTop': 10})
-
-
+    ])
 
     return layout
 

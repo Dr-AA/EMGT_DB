@@ -97,14 +97,14 @@ def create_page_3():
                            style={'width': "60%", 'marginTop': 30, 'marginLeft': 15, 'marginBotttom': 10}),
                 html.Div([
                     dcc.DatePickerRange(
-                        id='my-date-picker-range',
+                        id='nettoyage-date-picker',
                         min_date_allowed=date(2015, 1, 1),
                         max_date_allowed=date(2030, 1, 1),
                         initial_visible_month=date(2023, 1, 1),
                         end_date=date(2025, 1, 1),
                         style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}
                     ),
-                    html.Div(id='output-container-date-picker-range')])
+                    html.Div(id='nettoyage-output-date-picker')])
             ])]
         )])
     return layout

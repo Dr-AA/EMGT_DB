@@ -178,6 +178,41 @@ def get_new_data_gen(engine, table, tagName, last_date):
 
             return df_out
 
+def get_new_data_global(engine, table, tagName, first_date, last_date):
+    '''Renvoie un dataframe avec les données du tag demandé
+    aux dates supererieures a la date en entrée'''
+    if 'dbo.' not in table:
+        table = 'dbo.' + table
+
+    ## ATTENTION : INSTAL DE MS SQL SERVER EN FRANCAIS, DONC FORMAT DATE = DD-MM-YYYY !!!
+    last_date_str = last_date.strftime('%d-%m-%Y %H:%M:%S')
+    first_date_str = first_date.strftime('%d-%m-%Y %H:%M:%S')
+    with engine.connect() as con:
+        requete = "SELECT * FROM " + table + " WHERE tagName = " +\
+                  "'" + tagName + "'" + " AND ts >= '" + first_date_str + "'" +\
+                  " AND ts <= '" + last_date_str + "'" + " ORDER BY ts ASC"
+        try:
+            df_out = pd.read_sql_query(requete, con)
+        except:
+            print('Erreur pour acceder aux nouvelles valeur du tag ' + tagName)
+            exit(1)
+
+        if df_out.empty:
+            return None
+        else:
+            # La requete a fonctionne, on met le dataframe dans le bon format pr travailler en python
+            print(df_out.head())
+            df_out = df_out.set_index('ts')
+            df_out.index = pd.to_datetime(df_out.index)
+            # On vire les valeurs vides ou booleene non numeriques
+            df_out = df_out[(df_out['tagValue'] != '') & (df_out['tagValue'] != 'null') &
+                            (df_out['tagValue'] != 'false') & (df_out['tagValue'] != 'False') &
+                            (df_out['tagValue'] != 'True') & (df_out['tagValue'] != 'true') &
+                            (df_out['tagValue'] != '-') & (df_out['tagValue'] != 'undefined')]
+            df_out['tagValue'] = df_out['tagValue'].astype(float)
+
+            return df_out
+
 def plot_nettoyage(liste_df, dir_write):
 
     df_brut = liste_df[0]

@@ -10,7 +10,7 @@ import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime
+from datetime import datetime, date
 import Nettoyage as nettoyage
 
 
@@ -26,7 +26,6 @@ quoted_general = urllib.parse.quote_plus('DRIVER={ODBC Driver 13 for SQL Server}
                                          ';PWD='+ access_token['pwd'])
 
 engine_general = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted_general))
-
 
 server = app.server
 app.config.suppress_callback_exceptions = True
@@ -125,11 +124,15 @@ def update_tag_dropdowns(selected_table, selected_db):
 
 # INTERACTIVITE : CHARGEMENT DU GRAPHE AVEC LE TAG
 @app.callback(
+    #Output(component_id='output-date-picker-range',component_property='children'),
     Output(component_id='trend-graph', component_property='figure'),
     Input(component_id='table-dropdown', component_property='value'),
     Input(component_id='db-dropdown', component_property='value'),
     Input(component_id='tag-dropdown', component_property='value'),
-    Input(component_id='tag-dropdown-2', component_property='value'))
+    Input(component_id='tag-dropdown-2', component_property='value'),
+    #Input(component_id='date-picker-range', component_property= 'start_date'),
+    #Input(component_id='date-picker-range', component_property= 'end_date')
+)
 def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
     # On détermine la date du jour pour mettre un max sur l'historique des données
     year_today_1 = str(datetime.now().year - 1)
@@ -142,11 +145,21 @@ def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
                                          + access_token['user'] + ';PWD=' + access_token['pwd'])
         engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
 
+        # # on recupere les dates
+        # if start_date is not None and end_date is not None:
+        #     start_date_object = date.fromisoformat(start_date)
+        #     start_date_string = start_date_object.strftime('%d-%m-%Y %H:%M:%S')
+        #     end_date_object = date.fromisoformat(end_date)
+        #     end_date_string = end_date_object.strftime('%d-%m-%Y %H:%M:%S')
+        # else:
+        #     start_date_string = '01-12-2024 00:00:00'
+        #     end_date_string = '12-12-2024 10:00:00'
+
         df_out = nettoyage.get_new_data_gen(engine, selected_table,
-                                            selected_tag, pd.to_datetime('01-01-2023 00:00:00'))
+                                            selected_tag, pd.to_datetime('01-12-2024 00:00:00'))
 
         df_out_2 = nettoyage.get_new_data_gen(engine, selected_table,
-                                              selected_tag_2, pd.to_datetime('01-01-2023 00:00:00'))
+                                              selected_tag_2, pd.to_datetime('01-12-2024 00:00:00'))
         # Add the first plot
         fig.add_trace(
             go.Scatter(x=df_out.index, y=df_out['tagValue'], mode='lines+markers', name=df_out['tagName'][0]),
@@ -160,7 +173,7 @@ def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
         fig.update_layout(
             height=800,  # Set the height of the figure
             title="Tracés des Tags demandés",
-            xaxis=dict(title="Date et Heure"),  # X-axis title
+            xaxis2=dict(title="Date et Heure"),  # X-axis title
             yaxis=dict(title=df_out['tagName'][0]),  # Y-axis title for the first plot
             yaxis2=dict(title=df_out_2['tagName'][0])  # Y-axis title for the second plot
         )
@@ -171,7 +184,7 @@ def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
 ####
 ##################################################################################
 
-#`^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#################################################################################
 ######## GESTION DES INTERACTIONS DE LA PAGE DE NETTOYAGE
 
 # INTERACTIVITE : LISTE DE TABLES EN FONCTION DE LA BASE CHOISIE
