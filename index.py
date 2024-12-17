@@ -85,13 +85,19 @@ def update_tag_dropdowns(selected_table, selected_db):
                                          ';UID=' + access_token['user'] + ';PWD=' + access_token['pwd'])
         engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
         with engine.connect() as con:
-            requete = "SELECT DISTINCT tagName FROM dbo." + selected_table
+            if selected_table == 'light_records':
+                requete = "SELECT DISTINCT [key] FROM dbo." + selected_table
+            else:
+                requete = "SELECT DISTINCT tagName FROM dbo." + selected_table
             try:
                 df_out = pd.read_sql_query(requete, con)
             except:
                 print('Erreur pour acceder aux tag de la table' + selected_table)
                 # exit(1)
-        liste_tags = df_out['tagName'].to_list()
+        if selected_table == 'light_records':
+            liste_tags = df_out['key'].to_list()
+        else:
+            liste_tags = df_out['tagName'].to_list()
 
         options = [{'label': tag, 'value': tag} for tag in liste_tags]
         return options
@@ -110,13 +116,19 @@ def update_tag_dropdowns(selected_table, selected_db):
                                          ';UID=' + access_token['user'] + ';PWD=' + access_token['pwd'])
         engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
         with engine.connect() as con:
-            requete = "SELECT DISTINCT tagName FROM dbo." + selected_table
+            if selected_table == 'light_records':
+                requete = "SELECT DISTINCT [key] FROM dbo." + selected_table
+            else:
+                requete = "SELECT DISTINCT tagName FROM dbo." + selected_table
             try:
                 df_out = pd.read_sql_query(requete, con)
             except:
                 print('Erreur pour acceder aux tag de la table' + selected_table)
                 # exit(1)
-        liste_tags = df_out['tagName'].to_list()
+        if selected_table == 'light_records':
+            liste_tags = df_out['key'].to_list()
+        else:
+            liste_tags = df_out['tagName'].to_list()
 
         options = [{'label': tag, 'value': tag} for tag in liste_tags]
         return options
@@ -124,16 +136,15 @@ def update_tag_dropdowns(selected_table, selected_db):
 
 # INTERACTIVITE : CHARGEMENT DU GRAPHE AVEC LE TAG
 @app.callback(
-    #Output(component_id='output-date-picker-range',component_property='children'),
     Output(component_id='trend-graph', component_property='figure'),
     Input(component_id='table-dropdown', component_property='value'),
     Input(component_id='db-dropdown', component_property='value'),
     Input(component_id='tag-dropdown', component_property='value'),
     Input(component_id='tag-dropdown-2', component_property='value'),
-    #Input(component_id='date-picker-range', component_property= 'start_date'),
-    #Input(component_id='date-picker-range', component_property= 'end_date')
+    Input(component_id='date-picker-range', component_property= 'start_date'),
+    Input(component_id='date-picker-range', component_property= 'end_date')
 )
-def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
+def update_graph(selected_table, selected_db, selected_tag, selected_tag_2, start_date, end_date):
     # On détermine la date du jour pour mettre un max sur l'historique des données
     year_today_1 = str(datetime.now().year - 1)
 
@@ -146,20 +157,38 @@ def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
         engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
 
         # # on recupere les dates
-        # if start_date is not None and end_date is not None:
-        #     start_date_object = date.fromisoformat(start_date)
-        #     start_date_string = start_date_object.strftime('%d-%m-%Y %H:%M:%S')
-        #     end_date_object = date.fromisoformat(end_date)
-        #     end_date_string = end_date_object.strftime('%d-%m-%Y %H:%M:%S')
-        # else:
-        #     start_date_string = '01-12-2024 00:00:00'
-        #     end_date_string = '12-12-2024 10:00:00'
+        if start_date is not None and end_date is not None:
+            start_date_object = date.fromisoformat(start_date)
+            start_date_string = start_date_object.strftime('%d-%m-%Y %H:%M:%S')
+            end_date_object = date.fromisoformat(end_date)
+            end_date_string = end_date_object.strftime('%d-%m-%Y %H:%M:%S')
+        #else:
+           # start_date_string = '01-12-2024 00:00:00'
+            #end_date_string = '12-12-2024 10:00:00'
 
-        df_out = nettoyage.get_new_data_gen(engine, selected_table,
-                                            selected_tag, pd.to_datetime('01-12-2024 00:00:00'))
+        df_out = nettoyage.get_new_data_global(engine, selected_table,
+                                            selected_tag, pd.to_datetime(start_date_string),
+                                               pd.to_datetime(end_date_string))
+        if not df_out.empty:
+            print('valeurs du tag ' + selected_tag + ' entre les dates ' +
+                  start_date_string + ' et ' + end_date_string)
+            print(df_out.head())
+        else:
+            print('Pas de valeurs du tag ' + selected_tag + ' entre les dates ' +
+                  start_date_string + ' et ' + end_date_string)
 
-        df_out_2 = nettoyage.get_new_data_gen(engine, selected_table,
-                                              selected_tag_2, pd.to_datetime('01-12-2024 00:00:00'))
+        df_out_2 = nettoyage.get_new_data_global(engine, selected_table,
+                                              selected_tag_2, pd.to_datetime(start_date_string),
+                                               pd.to_datetime(end_date_string))
+        if not df_out_2.empty:
+            print('valeurs du tag ' + selected_tag + ' entre les dates ' +
+                  start_date_string + ' et ' + end_date_string)
+            print(df_out_2.head())
+        else:
+            print('Pas de valeurs du tag ' + selected_tag + ' entre les dates ' +
+                  start_date_string + ' et ' + end_date_string)
+
+
         # Add the first plot
         fig.add_trace(
             go.Scatter(x=df_out.index, y=df_out['tagValue'], mode='lines+markers', name=df_out['tagName'][0]),
@@ -183,6 +212,8 @@ def update_graph(selected_table, selected_db, selected_tag, selected_tag_2):
 
 ####
 ##################################################################################
+
+
 
 #################################################################################
 ######## GESTION DES INTERACTIONS DE LA PAGE DE NETTOYAGE

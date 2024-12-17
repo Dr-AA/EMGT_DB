@@ -83,11 +83,11 @@ def create_page_2():
                             id='date-picker-range',
                             min_date_allowed=date(2015, 1, 1),
                             max_date_allowed=date(2030, 1, 1),
-                            initial_visible_month=date(2023, 1, 1),
+                            initial_visible_month=date(2024, 12, 1),
                             end_date=date(2025, 1, 1),
                             style={'width': "60%", 'marginTop': 10, 'marginLeft': 15, 'marginBotttom': 10}
                         ),
-                        html.Div(id='output-date-picker-range')])
+                        ])
                 ]
             )
         ]
