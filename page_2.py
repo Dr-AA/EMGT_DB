@@ -37,7 +37,7 @@ liste_db = df_db['name'].to_list()
 
 nav = create_navbar()
 
-header = html.H4("Visualisation des données")
+header = html.H4("Visualisation de données en Trend")
 
 ### RENVOI DE LA PAGE TOTALE
 def create_page_2():

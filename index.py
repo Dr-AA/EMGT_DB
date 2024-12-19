@@ -215,6 +215,14 @@ def update_graph(selected_table, selected_db, selected_tag, selected_tag_2, star
 
 
 
+
+
+
+
+
+
+
+
 #################################################################################
 ######## GESTION DES INTERACTIONS DE LA PAGE DE NETTOYAGE
 

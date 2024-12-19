@@ -17,8 +17,9 @@ def create_navbar():
                         children=[
                             dbc.DropdownMenuItem("Home", href='/'),
                             dbc.DropdownMenuItem(divider=True),
-                            dbc.DropdownMenuItem("Visualiser des données", href='/page-2'),
-                            dbc.DropdownMenuItem("Nettoyer des données", href='/page-3'),
+                            dbc.DropdownMenuItem("Visualiser des données Trend", href='/page-2'),
+                            dbc.DropdownMenuItem("Visualiser des données Consommation", href='/page-3'),
+                            dbc.DropdownMenuItem("Nettoyer des données", href='/page-4'),
                         ],
                     ),
                 ],
