@@ -39,7 +39,6 @@ def clean_sauts(df, column):
 
     return outliers, df_clean
 
-
 def clean_zeroes(df, column):
 
     df_zeroes = df.loc[df[column] == 0]
@@ -92,13 +91,22 @@ def is_index(df):
     Input : dataframe with time in 1st column and value in 2nd"""
     ## TODO : rentre test plus robuste : avec remise a zero compteurs
     # On commence par ecarter les valeurs pourries
+    # On vire eventuellement une colonne tagName
+    if 'quality' in df.columns:
+        df = df.drop(['quality'], axis=1, errors='ignore')
+    if 'tagName' in df.columns:
+        df = df.drop(['tagName'], axis=1, errors='ignore')
+
     outliers, df = detect_outliers_iqr(df,df.columns[0])
-    df = df.set_index(pd.to_datetime(df[df.columns[0]], format='%Y-%m-%d %H:%M:%S'))
-    df = df.drop([df.columns[0]], axis=1, errors='ignore')
+    if not pd.api.types.is_datetime64_any_dtype(df.index):
+        df = df.set_index(pd.to_datetime(df[df.columns[0]], format='%Y-%m-%d %H:%M:%S'))
+    if df.columns[0] == 'ts':
+        df = df.drop([df.columns[0]], axis=1, errors='ignore')
+
     if df[df.columns[0]].is_monotonic_increasing and df.empty == False:
-        return True, None
+        return True
     else:
-        return False, None
+        return False
 
 def consumption_from_index(df):
     """Compute consumption from index and return consumption

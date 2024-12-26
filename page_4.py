@@ -13,17 +13,16 @@ header = html.H4("Fonctionnalité de nettoyage des données de compteurs ")
 ### ETABLISSEMENT DES CONNEXIONS ================================================================
 #MSSQLServer.energymgt.ch\MSSQL_EMGT_I02
 #### EXTRACTION DES USERS POSSIBLES
-access_token = {'driver': 'ODBC Driver 13 for SQL Server',
-                    'server': 'SERV-OVH04-LDB.energymgt.ch\EMGT',
+access_token = {'driver': 'ODBC Driver 18 for SQL Server',
+                    'server': 'SRV-NTD-MSQL-01',
                     'user': 'EMGT_Access',
-                    'pwd': '12-NRJ-28',
-                    'database':'TEST_AAU_PROG'}
+                    'pwd': '12-NRJ-28'}
 
-quoted = urllib.parse.quote_plus('DRIVER={ODBC Driver 13 for SQL Server};SERVER=' +
-                                         access_token['server'] + ';DATABASE=' + access_token['database'] +
-                                         ';UID=' + access_token['user'] + ';PWD=' + access_token['pwd'])
-engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted))
-with engine.connect() as con:
+constring = (f"mssql+pyodbc://{access_token['user']}:{access_token['pwd']}@"
+             f"{access_token['server']}/{"master"}?driver={access_token['driver']}&TrustServerCertificate=yes")
+
+engine_general = create_engine(constring)
+with engine_general.connect() as con:
     requete = "SELECT * FROM dbo.Users"
     try:
         df_out = pd.read_sql_query(requete, con)

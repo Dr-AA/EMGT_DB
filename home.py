@@ -14,3 +14,7 @@ def create_page_home():
         contenu,
     ],style={'marginTop': 10, 'marginBottom': 10, 'marginLeft': 10 , 'marginRight': 10})
     return layout
+
+### >> TODO 1 : Gérer les formats de stockage différents avec les base S+T
+### >> TODO 2 : Gérer la non prise en compte de la date de fin des data
+### >> TODO 3 : Gérer la prise en compte des styles de conso

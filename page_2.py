@@ -8,16 +8,15 @@ from datetime import date
 
 ### ETABLISSEMENT DES CONNEXIONS ================================================================
 #MSSQLServer.energymgt.ch\MSSQL_EMGT_I02
-access_token = {'driver': 'ODBC Driver 13 for SQL Server',
+access_token = {'driver': 'ODBC Driver 18 for SQL Server',
                     'server': 'SRV-NTD-MSQL-01',
                     'user': 'EMGT_Access',
                     'pwd': '12-NRJ-28'}
 
-quoted_general = urllib.parse.quote_plus('DRIVER={ODBC Driver 13 for SQL Server};SERVER='+
-                                     access_token['server']+ ';UID='+access_token['user']+
-                                         ';PWD='+ access_token['pwd'])
+constring = (f"mssql+pyodbc://{access_token['user']}:{access_token['pwd']}@"
+             f"{access_token['server']}/{"master"}?driver={access_token['driver']}&TrustServerCertificate=yes")
 
-engine_general = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(quoted_general))
+engine_general = create_engine(constring)
 with engine_general.connect() as con:
     requete = "SELECT name FROM sys.databases;"
     try:
